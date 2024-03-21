@@ -56,11 +56,17 @@
     <Compile Include="BAL\_Bal.cs" />
     <Compile Include="DAL\_getLoginResponse.cs" />
     <Compile Include="DAL\_getResponse.cs" />
+    <Compile Include="DAO\ApiResponseData.cs" />
     <Compile Include="DAO\Authorization_Request.cs" />
     <Compile Include="DAO\Authorization_Response.cs" />
+    <Compile Include="DAO\CreatePaymentRequest.cs" />
+    <Compile Include="DAO\GetPaymentStatusResponse.cs" />
+    <Compile Include="DAO\PayeeRegister_Individual_Request.cs" />
     <Compile Include="DAO\PayeeFormateRequest.cs" />
     <Compile Include="DAO\PayeeFormateResponse.cs" />
-    <Compile Include="DAO\PayeeRegisterRequest.cs" />
+    <Compile Include="DAO\PayeeRegister_Company_Request.cs" />
+    <Compile Include="DAO\payeeStatusRequest.cs" />
+    <Compile Include="DAO\payeeStatusResponse.cs" />
     <Compile Include="Service1.cs">
       <SubType>Component</SubType>
     </Compile>

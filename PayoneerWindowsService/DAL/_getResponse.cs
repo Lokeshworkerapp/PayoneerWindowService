@@ -8,6 +8,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PayoneerWindowsService.BAL;
+using PayoneerWindowsService.DAO;
 using RestSharp;
 
 namespace PayoneerWindowsService.DAL
@@ -20,9 +21,11 @@ namespace PayoneerWindowsService.DAL
 
     public class _getResponse
     {
-        public static string RestResponse(string url, RestSharp.Method method, object reqObj,
+        public static ApiResponseData RestResponse(string url, RestSharp.Method method, object reqObj,
      string Token, string log_method_name, string txn_no)
         {
+            ApiResponseData apiRes_ = new ApiResponseData();
+
             string baseUrl = ConfigurationManager.AppSettings["Baseurl"].ToString();
 
             string fullUrl = baseUrl + url;
@@ -30,6 +33,8 @@ namespace PayoneerWindowsService.DAL
             string responseContent = string.Empty;
 
             string jsonRequest = string.Empty;
+
+            string content_data = null;
 
             if (log_method_name == "Payoneer_RegisterPayeeFormat")
             {
@@ -64,9 +69,15 @@ namespace PayoneerWindowsService.DAL
             {
                 response = client.Execute(request);
 
-                string content_data = string.Concat(response.Content);
+                content_data = string.Concat(response.Content);
 
-                responseContent = (response.Content.Length.Equals(0) ? response.StatusCode.ToString() : response.Content);
+                apiRes_.StatusCode = response.StatusCode.ToString();
+
+                apiRes_.Content = content_data;
+
+                //responseContent = (response.Content.Length.Equals(0) ? response.StatusCode.ToString() : response.Content);
+
+                //responseContent = response.Content + " Error : " + response.StatusCode.ToString();
 
 
                 //if (log_method_name == "Fyorin_Create_SubAccount" || log_method_name == "Fyorin_Contacts_Create")
@@ -102,10 +113,10 @@ namespace PayoneerWindowsService.DAL
 
             if (!log_method_name.Equals("Payoneer_Login"))
             {
-                LogWriter.Add(log_method_name, jsonRequest, responseContent, txn_no, 2);
+                LogWriter.Add(log_method_name, jsonRequest, content_data, txn_no, 2);
             }
 
-            return responseContent;
+            return apiRes_;
         }
     }
 
