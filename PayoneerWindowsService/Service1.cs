@@ -23,11 +23,15 @@ namespace PayoneerWindowsService
 
         string programId = "";
 
+        string payee_id_ = "";
+
         public Service1()
         {
             InitializeComponent();
             token = Payoneer_Login();
+
             Run_PaymentsCreate(token);
+
             Get_PaymentsStatus_RecordByID(token);
 
             //Payonner_PayeeRegister();
@@ -110,8 +114,8 @@ namespace PayoneerWindowsService
 
         public ApiResponseData Payonner_PayeeRegister(string token, string payee_id_, string benetype_, string beneLastName_, string beneFirstName_,
                                 string beneDob_, string address_, string city_, string state_, string benecountry_, string postcode_, string type_, string accounttype_,
-                                string benecurrency_, string bankCountry_, string bicswift_, string bankNumber_, string bankname_,
-                                string beneaccountname_, string beneaccountno_, string iban_, string routingCode_, int localField_, string programId_, string legalType_)
+                                string benecurrency_, string bankCountry_, string bicswift_, string bankCode_, string bankname_,
+                                string beneaccountname_, string beneaccountno_, string programId_, string legalType_, string accountType_, string branchCode_)
         {
 
             PayeeRegister_Company_Request _companyRequest = new PayeeRegister_Company_Request();
@@ -131,75 +135,77 @@ namespace PayoneerWindowsService
                 {
                     PayeeFormateResponse _presponse = JsonConvert.DeserializeObject<PayeeFormateResponse>(rest.Content);
 
-                    //List<Item> listItem_ = new List<Item>();
 
-                    //listItem_ = _presponse.result.payout_method.fields.items;
-
-                    //if (listItem_.Any(item =>item.field_name == "AccountNumber"))
-                    //{
-                    //    bank_field_details.Add(new BankFieldDetail { name = "AccountNumber", value = beneaccountno_ });
-                    //}
-
-
-                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "Swift"))
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "Swift")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
                     {
                         bank_field_details.Add(new BankFieldDetail { name = "Swift", value = bicswift_ });
                         company_bank_field_details.Add(new Company_BankFieldDetail { name = "Swift", value = bicswift_ });
                     }
-                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "AccountName"))
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "AccountName")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
                     {
                         bank_field_details.Add(new BankFieldDetail { name = "AccountName", value = beneaccountname_ });
                         company_bank_field_details.Add(new Company_BankFieldDetail { name = "AccountName", value = beneaccountname_ });
                     }
-                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "BankName"))
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "BankName")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
                     {
                         bank_field_details.Add(new BankFieldDetail { name = "BankName", value = bankname_ });
                         company_bank_field_details.Add(new Company_BankFieldDetail { name = "BankName", value = bankname_ });
                     }
-                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "BankNumber"))
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "BankNumber")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
                     {
-                        bank_field_details.Add(new BankFieldDetail { name = "BankNumber", value = bankNumber_ });
-                        company_bank_field_details.Add(new Company_BankFieldDetail { name = "BankNumber", value = bankNumber_ });
+                        bank_field_details.Add(new BankFieldDetail { name = "BankNumber", value = bankCode_ });
+                        company_bank_field_details.Add(new Company_BankFieldDetail { name = "BankNumber", value = bankCode_ });
                     }
-                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "AccountNumber"))
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "AccountNumber")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
                     {
                         bank_field_details.Add(new BankFieldDetail { name = "AccountNumber", value = beneaccountno_ });
                         company_bank_field_details.Add(new Company_BankFieldDetail { name = "AccountNumber", value = beneaccountno_ });
                     }
 
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "IBAN")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
+                    {
+                        bank_field_details.Add(new BankFieldDetail { name = "IBAN", value = beneaccountno_ });
+                        company_bank_field_details.Add(new Company_BankFieldDetail { name = "IBAN", value = beneaccountno_ });
+                    }
 
-                    //List<Item> listItem_ = new List<Item>();
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "BSB")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
+                    {
+                        bank_field_details.Add(new BankFieldDetail { name = "BSB", value = bicswift_ });
+                        company_bank_field_details.Add(new Company_BankFieldDetail { name = "BSB", value = bicswift_ });
+                    }
 
-                    //listItem_ = _presponse.result.payout_method.fields.items;
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "SortCode")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
+                    {
+                        bank_field_details.Add(new BankFieldDetail { name = "SortCode", value = bicswift_ });
+                        company_bank_field_details.Add(new Company_BankFieldDetail { name = "SortCode", value = bicswift_ });
+                    }
 
-                    //if(listItem_.Find(item => item.field_name == "Swift"))
-
-                    //foreach (var list in listItem_)
-                    //{
-
-                    //    if (list.field_name == "Swift" && list.required == true)
-                    //    {
-                    //        bank_field_details.Add(new BankFieldDetail { name = "Swift", value = bicswift_ });
-                    //    }
-                    //    if (list.field_name == "AccountName" && list.required == true)
-                    //    {
-                    //        bank_field_details.Add(new BankFieldDetail { name = "AccountName", value = beneaccountname_ });
-                    //    }
-                    //    if (list.field_name == "BankName" && list.required == true)
-                    //    {
-                    //        bank_field_details.Add(new BankFieldDetail { name = "BankName", value = bankname_ });
-                    //    }
-                    //    if (list.field_name == "BankNumber" && list.required == true)
-                    //    {
-                    //        bank_field_details.Add(new BankFieldDetail { name = "BankNumber", value = bankNumber_ });
-                    //    }
-                    //    if (list.field_name == "AccountNumber" && list.required == true)
-                    //    {
-                    //        bank_field_details.Add(new BankFieldDetail { name = "AccountNumber", value = beneaccountno_ });
-                    //    }
-                    //}
-
-
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "BankCode")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
+                    {
+                        bank_field_details.Add(new BankFieldDetail { name = "BankCode", value = bankCode_ });
+                        company_bank_field_details.Add(new Company_BankFieldDetail { name = "BankCode", value = bankCode_ });
+                    }
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "BranchCode")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
+                    {
+                        bank_field_details.Add(new BankFieldDetail { name = "BranchCode", value = branchCode_ });
+                        company_bank_field_details.Add(new Company_BankFieldDetail { name = "BranchCode", value = branchCode_ });
+                    }
+                    if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "AccountType")
+                        && _presponse.result.payout_method.fields.items.Any(item => item.required == true))
+                    {
+                        bank_field_details.Add(new BankFieldDetail { name = "AccountType", value = accountType_ });
+                        company_bank_field_details.Add(new Company_BankFieldDetail { name = "AccountType", value = accountType_ });
+                    }
 
 
 
@@ -346,9 +352,10 @@ namespace PayoneerWindowsService
             #endregion
 
             string apiResponsePaymentID_ = null;
-            string reqTrxnNo_ = null;
-            string _apiResponseCreateContact = null;
-            string clientRefID = "Pay"+ getTime;
+
+            string reqTrxnNo_ = null;            
+            
+            string clientRefID = "Pay" + getTime;
 
             CreatePaymentRequest _request = new CreatePaymentRequest();
 
@@ -375,7 +382,7 @@ namespace PayoneerWindowsService
 
                     foreach (DataRow txn_dr in txn_dt.Rows)
                     {
-                        string payee_id_ = txn_dr["TxnNo"].ToString();
+                        reqTrxnNo_ = txn_dr["TxnNo"].ToString();
                         string benetype_ = txn_dr["benetype"].ToString(); // INDIVIDUAL / COMPANY
                         string beneLastName_ = txn_dr["beneLastName"].ToString();
                         string beneFirstName_ = txn_dr["beneFirstName"].ToString();
@@ -392,33 +399,50 @@ namespace PayoneerWindowsService
 
                         //==For Bank Details===//
                         string bicswift_ = txn_dr["bicswift"].ToString();
-                        string bankNumber_ = txn_dr["bankCode"].ToString(); // Bank Number
+                        string bankCode_ = txn_dr["bankCode"].ToString(); // Bank Number
                         string bankname_ = txn_dr["bankName"].ToString();   //Bank Name
                         string beneaccountname_ = txn_dr["accountName"].ToString();  //Enter here customer Full Name
                         string beneaccountno_ = txn_dr["beneAccountno"].ToString();
-                        string iban_ = txn_dr["iban"].ToString();
-                        string routingCode_ = txn_dr["routingCode"].ToString();
+                        //string iban_ = txn_dr["iban"].ToString();
+                        string branchCode_ = txn_dr["branchCode"].ToString();
                         int localField_ = Convert.ToInt32(txn_dr["localField"]);
                         string programId_ = txn_dr["programId"].ToString();
                         string legalType_ = txn_dr["legalType"].ToString();
-
                         string paymentDescription_ = txn_dr["paymentDescription"].ToString();
                         string amount_ = txn_dr["amount"].ToString();
+                        string accountType_ = txn_dr["accountType"].ToString();
 
-                        programId = programId_;
+                        payee_id_ = txn_dr["payeeID"].ToString(); ;
 
-                        string accountName = txn_dr["accountName"].ToString();
+                        programId = programId_;                        
 
                         reqTrxnNo_ = txn_dr["TxnNo"].ToString();
 
-                        //===Create Beneficiary=====//
-                        apiRes_ = Payonner_PayeeRegister(token, payee_id_, benetype_, beneLastName_, beneFirstName_,
-                            beneDob_, address_, city_, state_, benecountry_, postcode_, type_, accounttype_, benecurrency_, bankCountry_, bicswift_, bankNumber_, bankname_,
-                            beneaccountname_, beneaccountno_, iban_, routingCode_, localField_, programId_, legalType_);
+                        if (payee_id_ == "NA")
+                        {
+                            payee_id_ = "POY" + _Bal.get_bdTimestamp();
+
+                            //===Create Beneficiary=====//
+                            apiRes_ = Payonner_PayeeRegister(token, payee_id_, benetype_, beneLastName_, beneFirstName_,
+                            beneDob_, address_, city_, state_, benecountry_, postcode_, type_, accounttype_, benecurrency_,
+                            bankCountry_, bicswift_, bankCode_, bankname_, beneaccountname_, beneaccountno_, programId_, legalType_, accountType_, branchCode_);
+                        }
 
                         if (apiRes_.Content.Contains("\"result\":\"Success\""))
                         {
+                            var paramObj = new
+                            {
+                                payeeId = payee_id_,
+                                accountNo = beneaccountno_
+                            };
+
+                            _Bal.commonIUD("usp_Payoneer_Add_Bene", paramObj);
+
+
                             apiRes_ = Check_PayeeStatus(token, payee_id_, programId_);
+
+
+
 
                             if (apiRes_.StatusCode == "OK")
                             {
@@ -426,6 +450,14 @@ namespace PayoneerWindowsService
 
                                 if (_response.result.status.type == 1 && _response.result.account_id != null)
                                 {
+                                    var paramObjc = new
+                                    {
+                                        payeeId = payee_id_,
+                                        beneAccountID = _response.result.account_id
+                                    };
+
+                                    _Bal.commonIUD("usp_Payoneer_Update_Bene", paramObjc);
+
                                     PaymentsList.Add(new Payment { client_reference_id = clientRefID, payee_id = payee_id_, description = paymentDescription_, currency = benecurrency_, amount = amount_ });
 
                                     _request.Payments = PaymentsList;
@@ -444,7 +476,6 @@ namespace PayoneerWindowsService
                                         };
 
                                         _Bal.commonIUD("usp_spInprocessTxn", Inprocess_paramObj);
-
 
                                     }
                                     else
