@@ -26,10 +26,7 @@ namespace PayoneerWindowsService
         string payee_id_ = "";
 
         string clientRefID = null;
-
-        //reqTrxnNo_ = txn_dr["TxnNo"].ToString();
-
-        //clientRefID = reqTrxnNo_;
+        
 
         public Service1()
         {
@@ -37,13 +34,14 @@ namespace PayoneerWindowsService
 
             token = Payoneer_Login();
 
+            Payonner_PayeeRegister(token);
+
             Check_PayeeStatus(token);
 
             Run_PaymentsCreate(token);
 
             Get_PaymentsStatus_RecordByID(token);
-
-            //Payonner_PayeeRegister();
+            
         }
 
 
@@ -128,7 +126,7 @@ namespace PayoneerWindowsService
 
         //======================= PAYEE REGISTRATION ========================//
 
-        public ApiResponseData Payonner_PayeeRegister()
+        public ApiResponseData Payonner_PayeeRegister(string token)
         {
 
             PayeeRegister_Company_Request _companyRequest = new PayeeRegister_Company_Request();
@@ -395,6 +393,7 @@ namespace PayoneerWindowsService
         }
 
 
+
         //=======================CHECK PAYEE REGISTRATION STATUS========================//
 
         public ApiResponseData Check_PayeeStatus(string token)
@@ -485,77 +484,45 @@ namespace PayoneerWindowsService
 
                     foreach (DataRow txn_dr in txn_dt.Rows)
                     {
-                        reqTrxnNo_ = txn_dr["TxnNo"].ToString();
+                        //reqTrxnNo_ = txn_dr["TxnNo"].ToString();
 
-                        clientRefID = reqTrxnNo_;
+                        //clientRefID = reqTrxnNo_;
+                        string clientRefID = txn_dr["client_reference_id"].ToString();
+                        string paymentDescription_ = txn_dr["description"].ToString();
+                        string benecurrency_ = txn_dr["currency"].ToString();
+                        string amount_ = txn_dr["amount"].ToString();
 
+                        //reqTrxnNo_ = txn_dr["TxnNo"].ToString();
+                        //===Start For Send Transaction Process - Here ===// 
 
+                        PaymentsList.Add(new Payment { client_reference_id = clientRefID, payee_id = payee_id_, description = paymentDescription_, currency = benecurrency_, amount = amount_ });
 
+                        _request.Payments = PaymentsList;
 
+                        apiRes_ = _getResponse.RestResponse("/programs/" + programId + "/masspayouts", RestSharp.Method.POST, _request, token, "Payonner_Payments_Create", clientRefID);
 
-                        programId = programId_;
-
-                        reqTrxnNo_ = txn_dr["TxnNo"].ToString();
-
-                        if (payee_id_ == "NA")
+                        if (apiRes_.Content.Contains("\"result\":\"Payments Created\""))
                         {
-                            payee_id_ = "POY" + _Bal.get_bdTimestamp();
+                            //====For Inprocess====//
 
-                            //===Create Beneficiary=====//
-                            apiRes_ = Payonner_PayeeRegister(token, payee_id_, benetype_, beneLastName_, beneFirstName_,
-                            beneDob_, address_, city_, state_, benecountry_, postcode_, type_, accounttype_, benecurrency_,
-                            bankCountry_, bicswift_, bankCode_, bankname_, beneaccountname_, beneaccountno_, programId_, legalType_, accountType_, branchCode_);
-                        }
-
-                        if (apiRes_.Content.Contains("\"result\":\"Success\""))
-                        {
-                            var paramObj = new
+                            var Inprocess_paramObj = new
                             {
-                                payeeId = payee_id_,
-                                accountNo = beneaccountno_,
-                                programId = programId_
+                                //TxnsNumber = txn_dr["TxnNo"],
+                                TxnsNumber = clientRefID,
+                                ThirdPartyCode = payee_id_,
+                                //UserID = txn_dr["userID"]
+                                UserID = "1300562"
                             };
 
-                            _Bal.commonIUD("usp_Payoneer_Add_Bene", paramObj);
-
-
-                            //===Start For Send Transaction Process - Here ===// 
-
-                            PaymentsList.Add(new Payment { client_reference_id = clientRefID, payee_id = payee_id_, description = paymentDescription_, currency = benecurrency_, amount = amount_ });
-
-                            _request.Payments = PaymentsList;
-
-                            apiRes_ = _getResponse.RestResponse("/programs/" + programId + "/masspayouts", RestSharp.Method.POST, _request, token, "Payonner_Payments_Create", clientRefID);
-
-                            if (apiRes_.Content.Contains("\"result\":\"Payments Created\""))
-                            {
-                                //====For Inprocess====//
-
-                                var Inprocess_paramObj = new
-                                {
-                                    TxnsNumber = txn_dr["TxnNo"],
-                                    ThirdPartyCode = payee_id_,
-                                    UserID = txn_dr["userID"]
-                                };
-
-                                _Bal.commonIUD("usp_spInprocessTxn", Inprocess_paramObj);
-
-                            }
-                            else
-                            {
-                                //Agency block//
-
-                                var txnStatus_paramObj = new { Txn_No_ = txn_dr["TxnNo"] };
-                                _Bal.commonIUD("usp_set_transaction_agency_blocked", txnStatus_paramObj);
-                            }
-
+                            _Bal.commonIUD("usp_spInprocessTxn", Inprocess_paramObj);
 
                         }
                         else
                         {
                             //Agency block//
 
-                            var txnStatus_paramObj = new { Txn_No_ = txn_dr["TxnNo"] };
+                            //var txnStatus_paramObj = new { Txn_No_ = txn_dr["TxnNo"] };
+                            var txnStatus_paramObj = new { Txn_No_ = clientRefID };
                             _Bal.commonIUD("usp_set_transaction_agency_blocked", txnStatus_paramObj);
                         }
 
