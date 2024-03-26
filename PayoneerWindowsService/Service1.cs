@@ -19,14 +19,7 @@ namespace PayoneerWindowsService
     public partial class Service1 : ServiceBase
     {
 
-        string token = "";
-
-        string programId = "";
-
-        string payee_id_ = "";
-
-        string clientRefID = null;
-        
+        string token = "";        
 
         public Service1()
         {
@@ -187,9 +180,7 @@ namespace PayoneerWindowsService
                         string amount_ = txn_dr["amount"].ToString();
                         string accountType_ = txn_dr["accountType"].ToString();
 
-                        payee_id_ = txn_dr["payeeID"].ToString(); //Always NA from Database
-
-                        programId = programId_;
+                        string payee_id_ = txn_dr["payeeID"].ToString(); //Always NA from Database
 
                         //reqTrxnNo_ = txn_dr["TxnNo"].ToString();
 
@@ -360,11 +351,11 @@ namespace PayoneerWindowsService
 
                         if (benetype_ == "COMPANY")
                         {
-                            rest = _getResponse.RestResponse("programs/" + programId + "/payees/register-payee", RestSharp.Method.POST, _companyRequest, token, "Payonner_PayeeRegister", payee_id_);
+                            rest = _getResponse.RestResponse("programs/" + programId_ + "/payees/register-payee", RestSharp.Method.POST, _companyRequest, token, "Payonner_PayeeRegister", payee_id_);
                         }
                         else
                         {
-                            rest = _getResponse.RestResponse("programs/" + programId + "/payees/register-payee", RestSharp.Method.POST, _individualRequest, token, "Payonner_PayeeRegister", payee_id_);
+                            rest = _getResponse.RestResponse("programs/" + programId_ + "/payees/register-payee", RestSharp.Method.POST, _individualRequest, token, "Payonner_PayeeRegister", payee_id_);
                         }
 
                         if (rest.Content.Contains("\"result\":\"Success\""))
@@ -491,11 +482,13 @@ namespace PayoneerWindowsService
                         string paymentDescription_ = txn_dr["description"].ToString();
                         string benecurrency_ = txn_dr["currency"].ToString();
                         string amount_ = txn_dr["amount"].ToString();
+                        string payeeID_ = txn_dr["payee_id"].ToString();
+                        string programId = txn_dr["programId"].ToString();
 
                         //reqTrxnNo_ = txn_dr["TxnNo"].ToString();
                         //===Start For Send Transaction Process - Here ===// 
 
-                        PaymentsList.Add(new Payment { client_reference_id = clientRefID, payee_id = payee_id_, description = paymentDescription_, currency = benecurrency_, amount = amount_ });
+                        PaymentsList.Add(new Payment { client_reference_id = clientRefID, payee_id = payeeID_, description = paymentDescription_, currency = benecurrency_, amount = amount_ });
 
                         _request.Payments = PaymentsList;
 
@@ -507,11 +500,14 @@ namespace PayoneerWindowsService
 
                             var Inprocess_paramObj = new
                             {
-                                //TxnsNumber = txn_dr["TxnNo"],
-                                TxnsNumber = clientRefID,
-                                ThirdPartyCode = payee_id_,
+                                //TxnsNumber = txn_dr["TxnNo"],                                
+                                //ThirdPartyCode = payeeID_,
                                 //UserID = txn_dr["userID"]
+
+                                TxnsNumber = clientRefID,
+                                ThirdPartyCode = clientRefID,
                                 UserID = "1300562"
+
                             };
 
                             _Bal.commonIUD("usp_spInprocessTxn", Inprocess_paramObj);
@@ -557,6 +553,8 @@ namespace PayoneerWindowsService
 
             string txn_number_ = "", apiResponsePaymentID_ = "";
 
+            string programId = "";
+
             ApiResponseData apiRes_ = new ApiResponseData();
 
             try
@@ -572,11 +570,13 @@ namespace PayoneerWindowsService
 
                     foreach (DataRow tnx_dr in txn_dt.Rows)
                     {
-                        //apiResponsePaymentID_ = tnx_dr["ThirdPartyCode"].ToString().Split('|')[0]; // for testing does not exist
+                        //apiResponsePaymentID_ = tnx_dr["ThirdPartyCode"].ToString().Split('|')[0]; // for testing does not exist  
 
                         txn_number_ = tnx_dr["TransactionNumber"].ToString();
 
                         userID = tnx_dr["UserID"].ToString();
+
+                        programId = tnx_dr["program_Id"].ToString();
 
                         apiRes_ = _getResponse.RestResponse("/programs/" + programId + "/payouts/" + apiResponsePaymentID_ + "/status", RestSharp.Method.POST, null, token, "Payoneer_Payments_Status", txn_number_);
 
