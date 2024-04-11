@@ -23,7 +23,8 @@ namespace PayoneerWindowsService.DAL
     {
         public static ApiResponseData RestResponse(string url, RestSharp.Method method, object reqObj,
      string Token, string log_method_name, string txn_no)
-        {
+        {            
+
             ApiResponseData apiRes_ = new ApiResponseData();
 
             string baseUrl = ConfigurationManager.AppSettings["Baseurl"].ToString();
@@ -36,7 +37,9 @@ namespace PayoneerWindowsService.DAL
 
             string content_data = null;
 
-            if (log_method_name == "Payoneer_RegisterPayeeFormat")
+            if (log_method_name == "Payoneer_RegisterPayeeFormat" || 
+                log_method_name == "Payoneer_Get_PayeeStatus" || 
+                log_method_name == "Payoneer_CancelPayoutMethod")
             {
                 string fullUrl_ = fullUrl;
                 jsonRequest = JsonConvert.SerializeObject(fullUrl_);

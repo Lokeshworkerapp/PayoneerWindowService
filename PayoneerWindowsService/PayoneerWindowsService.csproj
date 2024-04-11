@@ -59,7 +59,10 @@
     <Compile Include="DAO\ApiResponseData.cs" />
     <Compile Include="DAO\Authorization_Request.cs" />
     <Compile Include="DAO\Authorization_Response.cs" />
+    <Compile Include="DAO\CancelPayout_Response.cs" />
     <Compile Include="DAO\CreatePaymentRequest.cs" />
+    <Compile Include="DAO\EditTransferMethod_Request.cs" />
+    <Compile Include="DAO\FundTransfer_Request.cs" />
     <Compile Include="DAO\GetPaymentStatusResponse.cs" />
     <Compile Include="DAO\PayeeRegister_Individual_Request.cs" />
     <Compile Include="DAO\PayeeFormateRequest.cs" />

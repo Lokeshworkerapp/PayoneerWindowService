@@ -41,6 +41,7 @@ namespace PayoneerWindowsService.DAO
         public Company_Contact contact { get; set; }
         public Company_Address address { get; set; }
         public Company company { get; set; }
+        public Id_Documents documents_ { get; set; }
     }
 
     public class Company_Payout_Method
@@ -53,10 +54,25 @@ namespace PayoneerWindowsService.DAO
     }
     public class Company
     {
-        public string incorporated_address_1 { get; set; }
-        public string incorporated_city { get; set; }
-        public string incorporated_country { get; set; }
         public string legal_type { get; set; }
-        public string name { get; set; }       
+        public string name { get; set; }
+        public string incorporated_country { get; set; }
+        public string incorporated_state { get; set; }
+        public string incorporated_address_1 { get; set; }
+        public string incorporated_address_2 { get; set; }
+        public string incorporated_city { get; set; }
+        public string incorporated_zipcode { get; set; }
+    }
+    public class Id_Documents
+    {
+        public string number { get; set; }
+        public string type { get; set; }
+        public string issue_country { get; set; }
+        public string name_on_id { get; set; }
+        public DateTime expiration_date { get; set; }
+        public DateTime issue_date { get; set; }
+        public string first_name_in_local_language { get; set; }
+        public string last_name_in_local_language { get; set; }
+        public string company_name_in_local_language { get; set; }
     }
 }

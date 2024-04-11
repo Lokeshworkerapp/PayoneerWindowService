@@ -19,13 +19,13 @@ namespace PayoneerWindowsService
     public partial class Service1 : ServiceBase
     {
 
-        string token = "";        
+        string token = "";
 
         public Service1()
         {
             InitializeComponent();
 
-            token = Payoneer_Login();
+            token = Payoneer_Login();            
 
             Payonner_PayeeRegister(token);
 
@@ -34,7 +34,11 @@ namespace PayoneerWindowsService
             Run_PaymentsCreate(token);
 
             Get_PaymentsStatus_RecordByID(token);
-            
+
+            //CancelPayoutMethod(token);
+
+            //EditTransferMethod(token);
+
         }
 
 
@@ -82,29 +86,85 @@ namespace PayoneerWindowsService
 
 
         //======================= GET REQUIRED FIELDS ========================//
-        public ApiResponseData GetRegisterPayeeFormat(string Token, string Country, string Currency, string Payee_type, string Program_id)
+        public ApiResponseData GetRegisterPayeeFormat(string Token, string country, string currency, string payee_type, string program_id, string payee_id_)
         {
-            string respToken = null;
-            string ApiResult = null;
-            string result = null;
 
             ApiResponseData apiRes_ = new ApiResponseData();
 
-            PayeeFormateRequest _request = new PayeeFormateRequest();
-            PayeeFormateResponse _responseObj = new PayeeFormateResponse();
             try
             {
-                _request.country = Country;
-                _request.currency = Currency;
-                _request.payee_type = Payee_type;
-                _request.program_id = Program_id;
-                string country = _request.country;
-                string currency = _request.currency;
-                string payee_type = _request.payee_type;
-                string program_id = _request.program_id;
-                return _getResponse.RestResponse("programs/" + program_id + "/payout-methods/bank/account-types/" + payee_type + "/countries/" + country + "/currencies/" + currency + "", RestSharp.Method.GET, "", Token, "Payoneer_RegisterPayeeFormat", "");
 
-                //_responseObj = JsonConvert.DeserializeObject<PayeeFormateResponse>(result);
+                return _getResponse.RestResponse("programs/" + program_id + "/payout-methods/bank/account-types/" + payee_type + "/countries/" + country + "/currencies/" + currency + "", RestSharp.Method.GET, "", Token, "Payoneer_RegisterPayeeFormat", payee_id_);
+
+            }
+            catch (Exception ex)
+            {
+                //=====LogWrite here====//
+                LogWriter.Add("PayoneerWindows_ServiceLog", (ex.Message + " | " + DateTime.Now.ToString("ddMMyyyy")), "", "", 2);
+            }
+
+            return apiRes_;
+        }
+
+
+
+        //======================= EDIT TRANSFER METHOD ========================//
+        public ApiResponseData EditTransferMethod(string Token)
+        {
+
+            ApiResponseData apiRes_ = new ApiResponseData();
+
+            EditTransferMethod_Request editTransferMethod_Request = new EditTransferMethod_Request();
+
+            List<EditTransfer_BankFieldDetail> editTransfer_BankFields = new List<EditTransfer_BankFieldDetail>();
+
+
+            try
+            {
+                DataTable txn_dt = _Bal.getTblData("usp_Payoneer_Bene_Registration").Tables[0];
+
+                //token = "";
+
+                if (txn_dt.Rows.Count > 0)
+                {
+
+                    if (token == "")
+                    {
+                        token = Payoneer_Login();
+                    }
+
+                    //List<EditTransferMethod_Request> paymentRequests = new List<EditTransferMethod_Request>();                    
+
+                    foreach (DataRow txn_dr in txn_dt.Rows)
+                    {
+                        editTransferMethod_Request.type = "BANK";
+                        editTransferMethod_Request.bank_account_type = txn_dr["benetype"].ToString(); // INDIVIDUAL / COMPANY
+                        editTransferMethod_Request.country = txn_dr["benecountry"].ToString();
+                        editTransferMethod_Request.currency = txn_dr["beneCurrency"].ToString();
+
+                        string program_id = txn_dr["programId"].ToString();
+                        string payee_id = "POY1712664606";
+                        string AccountNumber = txn_dr["beneAccountno"].ToString();
+                        string AccountName = txn_dr["accountName"].ToString();
+                        string BankName = txn_dr["bankName"].ToString();
+                        string RoutingNumber = txn_dr["routingCode"].ToString();
+                        string AccountType = txn_dr["accountType"].ToString();
+
+                        editTransfer_BankFields.Add(new EditTransfer_BankFieldDetail { name = "AccountNumber", value = AccountNumber });
+                        editTransfer_BankFields.Add(new EditTransfer_BankFieldDetail { name = "AccountName", value = AccountName });
+                        editTransfer_BankFields.Add(new EditTransfer_BankFieldDetail { name = "BankName", value = BankName });
+                        editTransfer_BankFields.Add(new EditTransfer_BankFieldDetail { name = "RoutingNumber", value = RoutingNumber });
+                        editTransfer_BankFields.Add(new EditTransfer_BankFieldDetail { name = "AccountType", value = AccountType });
+
+                        editTransferMethod_Request.bank_field_details = editTransfer_BankFields;
+
+                        return _getResponse.RestResponse("programs/" + program_id + "/payees/" + payee_id + "/payout-methods", RestSharp.Method.POST, editTransferMethod_Request, Token, "Payoneer_EditTransferMethod", payee_id);
+
+
+                    }
+                }
+
+                
             }
             catch (Exception ex)
             {
@@ -151,7 +211,7 @@ namespace PayoneerWindowsService
                     foreach (DataRow txn_dr in txn_dt.Rows)
                     {
 
-                        string benetype_ = txn_dr["benetype"].ToString(); // INDIVIDUAL / COMPANY
+                        string benetype_ = txn_dr["benetype"].ToString();   // “PERSONAL/INDIVIDUAL”// “COMPANY”
                         string beneLastName_ = txn_dr["beneLastName"].ToString();
                         string beneFirstName_ = txn_dr["beneFirstName"].ToString();
                         string beneDob_ = txn_dr["beneDob"].ToString();      //DateOfBirth
@@ -161,7 +221,7 @@ namespace PayoneerWindowsService
                         string benecountry_ = txn_dr["benecountry"].ToString();
                         string postcode_ = txn_dr["postcode"].ToString();  //ZipCode
                         string type_ = txn_dr["paymentType"].ToString(); //Type - for Payment - BankTransfer/Cash
-                        string accounttype_ = txn_dr["benetype"].ToString(); // PERSONAL / COMPANY
+                        string accounttype_ = txn_dr["benetype"].ToString(); // “PERSONAL/INDIVIDUAL”// “COMPANY”
                         string benecurrency_ = txn_dr["beneCurrency"].ToString(); //BankCurrency
                         string bankCountry_ = txn_dr["bankCountry"].ToString();  //For PayOut
 
@@ -171,6 +231,7 @@ namespace PayoneerWindowsService
                         string bankname_ = txn_dr["bankName"].ToString();   //Bank Name
                         string beneaccountname_ = txn_dr["accountName"].ToString();  //Enter here customer Full Name
                         string beneaccountno_ = txn_dr["beneAccountno"].ToString();
+                        string routingCode_ = txn_dr["routingCode"].ToString();
                         //string iban_ = txn_dr["iban"].ToString();
                         string branchCode_ = txn_dr["branchCode"].ToString();
                         int localField_ = Convert.ToInt32(txn_dr["localField"]);
@@ -191,9 +252,8 @@ namespace PayoneerWindowsService
 
                         //------------------CHECK REQUIRED FIELD HERE---------------------------------//
 
-                        rest = GetRegisterPayeeFormat(token, benecountry_, benecurrency_, benetype_, programId_);
-
-
+                        rest = GetRegisterPayeeFormat(token, benecountry_, benecurrency_, benetype_, programId_, payee_id_);
+                        
 
                         if (rest.StatusCode == "OK")
                         {
@@ -235,6 +295,12 @@ namespace PayoneerWindowsService
                                 company_bank_field_details.Add(new Company_BankFieldDetail { name = "IBAN", value = beneaccountno_ });
                             }
 
+                            if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "BIC" && item.required == true))
+                            {
+                                bank_field_details.Add(new BankFieldDetail { name = "BIC", value = bicswift_ });
+                                company_bank_field_details.Add(new Company_BankFieldDetail { name = "BIC", value = bicswift_ });
+                            }
+
                             if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "BSB" && item.required == true))
                             {
                                 bank_field_details.Add(new BankFieldDetail { name = "BSB", value = bicswift_ });
@@ -265,6 +331,12 @@ namespace PayoneerWindowsService
                                 company_bank_field_details.Add(new Company_BankFieldDetail { name = "AccountType", value = accountType_ });
                             }
 
+                            if (_presponse.result.payout_method.fields.items.Any(item => item.field_name == "RoutingNumber" && item.required == true))
+                            {
+                                bank_field_details.Add(new BankFieldDetail { name = "RoutingNumber", value = routingCode_ });
+                                company_bank_field_details.Add(new Company_BankFieldDetail { name = "RoutingNumber", value = routingCode_ });
+                            }
+
 
 
                             if (benetype_ == "COMPANY")
@@ -291,12 +363,14 @@ namespace PayoneerWindowsService
                                     company = new Company
                                     {
                                         incorporated_address_1 = address_,
+                                        incorporated_address_2 = "",
                                         incorporated_city = city_,
+                                        incorporated_state = state_,
                                         incorporated_country = benecountry_,
                                         legal_type = legalType_,               // PUBLIC/PRIVATE/SOLE_PROPRIETORSHIP/LLC/LLP/NON_PROFIT/LTD/INC
-                                        name = beneaccountname_
+                                        name = beneaccountname_,
+                                        incorporated_zipcode = postcode_
                                     }
-
 
                                 };
                                 _companyRequest.payout_method = new Company_Payout_Method
@@ -306,7 +380,6 @@ namespace PayoneerWindowsService
                                     country = bankCountry_,
                                     currency = benecurrency_,
                                     bank_field_details = company_bank_field_details
-
 
                                 };
 
@@ -640,7 +713,206 @@ namespace PayoneerWindowsService
 
 
 
+        //======================= CANCEL PAYOUT METHOD ========================//
+        public ApiResponseData CancelPayoutMethod(string Token)
+        {
 
+            ApiResponseData apiRes_ = new ApiResponseData();
+
+            CancelPayout_Response payout_Response = new CancelPayout_Response();
+
+
+            try
+            {
+                DataTable txn_dt = _Bal.getTblData("usp_Payoneer_Bene_Registration").Tables[0];
+
+                //token = "";
+
+                if (txn_dt.Rows.Count > 0)
+                {
+
+                    if (token == "")
+                    {
+                        token = Payoneer_Login();
+                    }
+
+                    //List<EditTransferMethod_Request> paymentRequests = new List<EditTransferMethod_Request>();                    
+
+                    foreach (DataRow txn_dr in txn_dt.Rows)
+                    {
+                        
+                        string program_id = txn_dr["programId"].ToString();                        
+                        //string client_reference_id = txn_dr["TxnNo"].ToString();
+                        string client_reference_id = "TXN8053358656";
+
+
+                        return _getResponse.RestResponse("programs/"+ program_id + "/payouts/"+ client_reference_id + "/cancel", RestSharp.Method.PUT, "", Token, "Payoneer_Cancel_PayoutMethod", client_reference_id);
+
+
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                //=====LogWrite here====//
+                LogWriter.Add("PayoneerWindows_ServiceLog", (ex.Message + " | " + DateTime.Now.ToString("ddMMyyyy")), "", "", 2);
+            }
+
+            return apiRes_;
+        }
+
+
+
+        //======================= Get KYC METHOD ========================//
+        public ApiResponseData GetKycMethod(string Token)
+        {
+
+            ApiResponseData apiRes_ = new ApiResponseData();
+
+            try
+            {
+                DataTable txn_dt = _Bal.getTblData("usp_Payoneer_Bene_Registration").Tables[0];
+
+                //token = "";
+
+                if (txn_dt.Rows.Count > 0)
+                {
+
+                    if (token == "")
+                    {
+                        token = Payoneer_Login();
+                    }
+
+                    foreach (DataRow txn_dr in txn_dt.Rows)
+                    {
+
+                        string program_id = txn_dr["programId"].ToString();
+                        //string payee_id = txn_dr["payeeID"].ToString();
+                        string payee_id = "POY1712813651";
+
+
+                        return _getResponse.RestResponse("programs/"+ program_id +"/payees/"+ payee_id +"/kyc", RestSharp.Method.GET, "", Token, "Payoneer_GET_KYC", payee_id);
+
+
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                //=====LogWrite here====//
+                LogWriter.Add("PayoneerWindows_ServiceLog", (ex.Message + " | " + DateTime.Now.ToString("ddMMyyyy")), "", "", 2);
+            }
+
+            return apiRes_;
+        }
+
+
+
+        //======================= QUERY PROGRAM BALANCE METHOD ========================//
+        public ApiResponseData QueryProgramBalanceMethod(string Token)
+        {
+
+            ApiResponseData apiRes_ = new ApiResponseData();
+
+            try
+            {
+                DataTable txn_dt = _Bal.getTblData("usp_Payoneer_Bene_Registration").Tables[0];
+
+                //token = "";
+
+                if (txn_dt.Rows.Count > 0)
+                {
+
+                    if (token == "")
+                    {
+                        token = Payoneer_Login();
+                    }
+
+                    foreach (DataRow txn_dr in txn_dt.Rows)
+                    {
+
+                        string program_id = txn_dr["programId"].ToString();
+                        //string payee_id = txn_dr["payeeID"].ToString();
+                        //string payee_id = "POY1712813651";
+
+
+                        return _getResponse.RestResponse("programs/" + program_id + "/balance", RestSharp.Method.GET, "", Token, "Payoneer_QueryProgramBalance", program_id);
+
+
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                //=====LogWrite here====//
+                LogWriter.Add("PayoneerWindows_ServiceLog", (ex.Message + " | " + DateTime.Now.ToString("ddMMyyyy")), "", "", 2);
+            }
+
+            return apiRes_;
+        }
+
+
+
+        //======================= FUND TRANSFER METHOD ========================//
+        public ApiResponseData FundTransferMethod(string Token)
+        {
+
+            ApiResponseData apiRes_ = new ApiResponseData();
+
+            FundTransfer_Request fundTransfer_ = new FundTransfer_Request();
+
+            try
+            {
+                DataTable txn_dt = _Bal.getTblData("usp_Payoneer_Bene_Registration").Tables[0];
+
+                //token = "";
+
+                if (txn_dt.Rows.Count > 0)
+                {
+
+                    if (token == "")
+                    {
+                        token = Payoneer_Login();
+                    }
+
+                    foreach (DataRow txn_dr in txn_dt.Rows)
+                    {
+
+                        fundTransfer_.target_partner_id = txn_dr["target_partner_id"].ToString();
+                        fundTransfer_.amount = txn_dr["amount"].ToString();
+                        fundTransfer_.description = txn_dr["description"].ToString();
+
+                        string program_id = txn_dr["program_id"].ToString();
+                        //string payee_id = "POY1712813651";
+
+
+                        return _getResponse.RestResponse("programs/" + program_id + "/transfer", RestSharp.Method.POST, "", Token, "Payoneer_FundTransfer", program_id);
+
+
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                //=====LogWrite here====//
+                LogWriter.Add("PayoneerWindows_ServiceLog", (ex.Message + " | " + DateTime.Now.ToString("ddMMyyyy")), "", "", 2);
+            }
+
+            return apiRes_;
+        }
+
+
+
+
+        //===========SET TIMER============//
         protected override void OnStart(string[] args)
         {
         }
@@ -648,5 +920,6 @@ namespace PayoneerWindowsService
         protected override void OnStop()
         {
         }
+
     }
 }
