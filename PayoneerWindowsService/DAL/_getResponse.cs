@@ -39,7 +39,9 @@ namespace PayoneerWindowsService.DAL
 
             if (log_method_name == "Payoneer_RegisterPayeeFormat" || 
                 log_method_name == "Payoneer_Get_PayeeStatus" || 
-                log_method_name == "Payoneer_CancelPayoutMethod")
+                log_method_name == "Payoneer_Cancel_PayoutMethod" ||
+                log_method_name == "Payoneer_GET_KYC" ||
+                log_method_name == "Payoneer_QueryProgramBalance")
             {
                 string fullUrl_ = fullUrl;
                 jsonRequest = JsonConvert.SerializeObject(fullUrl_);
@@ -77,36 +79,6 @@ namespace PayoneerWindowsService.DAL
                 apiRes_.StatusCode = response.StatusCode.ToString();
 
                 apiRes_.Content = content_data;
-
-                //responseContent = (response.Content.Length.Equals(0) ? response.StatusCode.ToString() : response.Content);
-
-                //responseContent = response.Content + " Error : " + response.StatusCode.ToString();
-
-
-                //if (log_method_name == "Fyorin_Create_SubAccount" || log_method_name == "Fyorin_Contacts_Create")
-                //{
-
-
-                //    if (response.StatusCode.ToString() == "NoContent" || response.StatusCode.ToString() == "Conflict")
-                //    {
-
-
-                //        responseContent = response.Headers.ToList().Find(x => x.Name == "generated-id").Value.ToString();
-
-
-                //    }
-                //    else
-                //    {
-                //        responseContent = (response.Content.Length.Equals(0) ? response.StatusCode.ToString() : response.Content);
-                //    }
-
-                //}
-                //else
-                //{
-                //    responseContent = (response.Content.Length.Equals(0) ? response.StatusCode.ToString() : response.Content);
-                //}
-
-
 
             }
             catch (Exception exp)
