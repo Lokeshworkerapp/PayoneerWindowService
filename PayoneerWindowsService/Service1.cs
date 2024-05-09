@@ -74,7 +74,12 @@ namespace PayoneerWindowsService
                 _request.grant_type = "client_credentials";
                 _request.scope = "read write";
 
-                string result = _getLoginResponse.RestResponse("https://login.sandbox.payoneer.com/api/v2/oauth2/token", RestSharp.Method.POST, _request, respToken, "Payoneer_Login", "");
+                //BaseURL For UAT = "https://login.sandbox.payoneer.com/api/v2/oauth2/token";
+
+                //BaseURL For LIVE = "https://login.payoneer.com/api/v2/oauth2/token";
+
+
+                string result = _getLoginResponse.RestResponse("https://login.payoneer.com/api/v2/oauth2/token", RestSharp.Method.POST, _request, respToken, "Payoneer_Login", "");
 
                 _responseObj = JsonConvert.DeserializeObject<Authorization_Response>(result);
 
